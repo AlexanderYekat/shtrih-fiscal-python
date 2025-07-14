@@ -89,8 +89,8 @@ class ShtrihKKT:
                 self.fr.Price = item["price"]
                 self.fr.Department = 1
                 self.fr.Tax1 = item["tax1"]
-                self.fr.PaymentTypeSign = 4
-                self.fr.PaymentItemSign = 1
+                self.fr.PaymentTypeSign = 4 #полный расчёт
+                self.fr.PaymentItemSign = 4 #услуга
                 self.fr.FNOperation()
             self.fr.CheckSubTotal()
             total_cash = sum(i["sum"] for i in items if i.get("pay_type", "cash") == "cash")
