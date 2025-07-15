@@ -75,28 +75,45 @@ class ShtrihKKT:
         except Exception as e:
             raise ShtrihKKTError(f"Ошибка печати QR-кода: {e}")
 
-    def print_check(self, cashier: str, tax_type: int, items: List[Dict]):
-        try:
-            self.fr.TagNumber = 1021
-            self.fr.TagType = 7
-            self.fr.TagValueStr = cashier
-            self.fr.FNSendTag()
-            self.fr.TaxType = tax_type
-            self.fr.CheckType = 0
-            for item in items:
-                self.fr.StringForPrinting = item["name"]
-                self.fr.Quantity = item["qty"]
-                self.fr.Price = item["price"]
-                self.fr.Department = 1
-                self.fr.Tax1 = item["tax1"]
-                self.fr.PaymentTypeSign = 4 #полный расчёт
-                self.fr.PaymentItemSign = 4 #услуга
-                self.fr.FNOperation()
-            self.fr.CheckSubTotal()
-            total_cash = sum(i["sum"] for i in items if i.get("pay_type", "cash") == "cash")
-            total_card = sum(i["sum"] for i in items if i.get("pay_type", "cash") == "card")
-            self.fr.Summ1 = total_cash
-            self.fr.Summ2 = total_card
-            self.fr.FNCloseCheckEx()
+    def print_check(self, cashier: str, tax_type: int, items: List[Dict], is_return: bool = False):
+        """
+        cashier: ФИО кассира
+        tax_type: система налогообложения (десятичное число, см. TAXTYPE_MAP)
+        items: список товаров, каждый — dict:
+            {
+                "name": str,
+                "price": int,   # в копейках
+                "qty": float,
+                "sum": int,     # в копейках
+                "tax1": int     # ставка НДС
+            }
+        is_return: если True — чек возврата (CheckType=2), иначе обычный чек (CheckType=0)
+        """
+        # Установить ФИО кассира
+        self.fr.TagNumber = 1021
+        self.fr.TagType = 7
+        self.fr.TagValueStr = cashier
+        self.fr.FNSendTag()
+        # Установить систему налогообложения
+        self.fr.TaxType = tax_type
+        # Открыть чек
+        self.fr.CheckType = 2 if is_return else 0
+        for item in items:
+            self.fr.StringForPrinting = item["name"]
+            self.fr.Quantity = item["qty"]
+            self.fr.Price = item["price"]
+            self.fr.Department = 1
+            self.fr.Tax1 = item["tax1"]
+            self.fr.PaymentTypeSign = 4
+            self.fr.PaymentItemSign = 1
+            self.fr.FNOperation()
+        # Подытог
+        self.fr.CheckSubTotal()
+        # Оплата (наличные и безналичные)
+        total_cash = sum(i["sum"] for i in items if i.get("pay_type", "cash") == "cash")
+        total_card = sum(i["sum"] for i in items if i.get("pay_type", "cash") == "card")
+        self.fr.Summ1 = total_cash
+        self.fr.Summ2 = total_card
+        self.fr.FNCloseCheckEx()
         except Exception as e:
             raise ShtrihKKTError(f"Ошибка печати чека: {e}") 

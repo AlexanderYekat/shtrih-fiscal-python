@@ -5,6 +5,7 @@ if __name__ == "__main__":
         kkt = ShtrihKKT(com_port=1, baud_rate=5, password=30)
         kkt.print_text("Добро пожаловать!")
         kkt.print_qr("https://example.com")
+        # Обычный чек
         kkt.print_check(
             cashier="Иванов Иван",
             tax_type=2,  # УСН доход
@@ -12,6 +13,15 @@ if __name__ == "__main__":
                 {"name": "Товар 1", "price": 10000, "qty": 2, "sum": 20000, "tax1": 1},
                 {"name": "Товар 2", "price": 5000, "qty": 1, "sum": 5000, "tax1": 0},
             ]
+        )
+        # Возвратный чек
+        kkt.print_check(
+            cashier="Петров Петр",
+            tax_type=2,
+            items=[
+                {"name": "Возврат товара", "price": 15000, "qty": 1, "sum": 15000, "tax1": 1},
+            ],
+            is_return=True
         )
     except ShtrihKKTError as e:
         print(f"Ошибка ККТ: {e}")

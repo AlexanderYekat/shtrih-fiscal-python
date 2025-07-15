@@ -6,6 +6,7 @@
 
 ## Возможности
 - Печать чека с передачей ФИО кассира, системы налогообложения, списка товаров, ставок НДС, оплаты наличными/безналичными
+- Печать возвратного чека (is_return=True)
 - Печать произвольного текста
 - Печать QR-кода
 - Простая интеграция в любые Python-проекты
@@ -35,6 +36,7 @@ if __name__ == "__main__":
         kkt = ShtrihKKT(com_port=1, baud_rate=5, password=30)
         kkt.print_text("Добро пожаловать!")
         kkt.print_qr("https://example.com")
+        # Обычный чек
         kkt.print_check(
             cashier="Иванов Иван",
             tax_type=2,  # УСН доход
@@ -43,11 +45,25 @@ if __name__ == "__main__":
                 {"name": "Товар 2", "price": 5000, "qty": 1, "sum": 5000, "tax1": 0},
             ]
         )
+        # Возвратный чек
+        kkt.print_check(
+            cashier="Петров Петр",
+            tax_type=2,
+            items=[
+                {"name": "Возврат товара", "price": 15000, "qty": 1, "sum": 15000, "tax1": 1},
+            ],
+            is_return=True
+        )
     except ShtrihKKTError as e:
         print(f"Ошибка ККТ: {e}")
     except Exception as e:
         print(f"Другая ошибка: {e}")
 ```
+
+### Параметр is_return
+- В методе `print_check` есть параметр `is_return` (по умолчанию False).
+- Если `is_return=True`, будет напечатан чек возврата (CheckType=2).
+- Если `is_return=False` (или не указан), будет напечатан обычный чек продажи (CheckType=0).
 
 ## Таблицы ставок НДС и систем налогообложения
 
