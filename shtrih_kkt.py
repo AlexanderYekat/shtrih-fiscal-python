@@ -64,8 +64,9 @@ class ShtrihKKT:
             self.fr.BarCode = qr_data
             self.fr.BarcodeStartBlockNumber = 0
             self.fr.BarcodeParameter1 = 0
-            self.fr.BarcodeParameter1 = 4
-            self.fr.BarcodeParameter1 = 3
+            #self.fr.BarcodeParameter2 = 4
+            self.fr.BarcodeParameter3 = 3
+            #self.fr.PrintBarcodeGraph()
             self.fr.LoadAndPrint2DBarcode()
             self.fr.WaitForPrinting()
             self.fr.StringQuantity = 10
@@ -74,6 +75,26 @@ class ShtrihKKT:
             self.fr.CutCheck()
         except Exception as e:
             raise ShtrihKKTError(f"Ошибка печати QR-кода: {e}")
+        
+    def print_qr2(self, qr_data: str):
+        try:
+            self.fr.BarcodeType = 3
+            self.fr.BarCode = qr_data
+            self.fr.LineNumber = 200
+            self.fr.BarWidth = 200
+            self.fr.BarcodeAlignment = 0            
+            #self.fr.BarcodeParameter1 = 0
+            #self.fr.BarcodeParameter2 = 4
+            #self.fr.BarcodeParameter3 = 3
+            self.fr.PrintBarcodeGraph()
+            #self.fr.LoadAndPrint2DBarcode()
+            self.fr.WaitForPrinting()
+            self.fr.StringQuantity = 10
+            self.fr.FeedDocument()
+            self.fr.CutType = 2
+            self.fr.CutCheck()
+        except Exception as e:
+            raise ShtrihKKTError(f"Ошибка печати QR-кода: {e}")        
 
     def print_check(self, cashier: str, tax_type: int, items: List[Dict], is_return: bool = False):
         """
