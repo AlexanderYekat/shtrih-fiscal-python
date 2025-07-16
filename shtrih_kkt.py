@@ -110,31 +110,37 @@ class ShtrihKKT:
             }
         is_return: если True — чек возврата (CheckType=2), иначе обычный чек (CheckType=0)
         """
+        try:
         # Установить ФИО кассира
-        self.fr.TagNumber = 1021
-        self.fr.TagType = 7
-        self.fr.TagValueStr = cashier
-        self.fr.FNSendTag()
-        # Установить систему налогообложения
-        self.fr.TaxType = tax_type
-        # Открыть чек
-        self.fr.CheckType = 2 if is_return else 0
-        for item in items:
-            self.fr.StringForPrinting = item["name"]
-            self.fr.Quantity = item["qty"]
-            self.fr.Price = item["price"]
-            self.fr.Department = 1
-            self.fr.Tax1 = item["tax1"]
-            self.fr.PaymentTypeSign = 4
-            self.fr.PaymentItemSign = 1
-            self.fr.FNOperation()
-        # Подытог
-        self.fr.CheckSubTotal()
-        # Оплата (наличные и безналичные)
-        total_cash = sum(i["sum"] for i in items if i.get("pay_type", "cash") == "cash")
-        total_card = sum(i["sum"] for i in items if i.get("pay_type", "cash") == "card")
-        self.fr.Summ1 = total_cash
-        self.fr.Summ2 = total_card
-        self.fr.FNCloseCheckEx()
+            self.fr.TagNumber = 1021
+            self.fr.TagType = 7
+            self.fr.TagValueStr = cashier
+            self.fr.FNSendTag()
+            # Установить систему налогообложения
+            self.fr.TaxType = tax_type
+            # Открыть чек
+            self.fr.CheckType = 2 if is_return else 0
+            for item in items:
+                try:
+                    self.fr.StringForPrinting = item["name"]
+                    self.fr.Quantity = item["qty"]
+                    self.fr.Price = item["price"]
+                    self.fr.Department = 1
+                    self.fr.Tax1 = item["tax1"]
+                    self.fr.PaymentTypeSign = 4
+                    self.fr.PaymentItemSign = 1
+                    self.fr.FNOperation()
+                except Exception as e:
+                    raise ShtrihKKTError(f"Ошибка печати товара: {e}")            
+            # Подытог
+            self.fr.CheckSubTotal()
+            # Оплата (наличные и безналичные)
+            total_cash = sum(i["sum"] for i in items if i.get("pay_type", "cash") == "cash")
+            total_card = sum(i["sum"] for i in items if i.get("pay_type", "cash") == "card")
+            self.fr.Summ1 = total_cash
+            self.fr.Summ2 = total_card
+            self.fr.FNCloseCheckEx()
         except Exception as e:
             raise ShtrihKKTError(f"Ошибка печати чека: {e}") 
+        finally:
+            self.fr.Close()
